@@ -42,17 +42,50 @@ async function run() {
         })
 
 
-        app.get("/my-products", async (req, res) => {
-            const myProducts = productCollection.find({ subcategory_name: "myProduct" }
-            ).sort({ rating: -1 })
+        app.get("/my-products/:email", async (req, res) => {
+            const userEmail = req.params.email
+            const filter = { email: userEmail }
+            const options = { short: { item_name: 1 } }
+            const myProducts = productCollection.find(filter)
             const result = await myProducts.toArray()
             res.send(result)
         })
 
 
+
         app.post("/products", async (req, res) => {
             const product = req.body;
             const result = await productCollection.insertOne(product)
+            res.send(result)
+        })
+        app.put("/product/:id", async (req, res) => {
+            const id = req.params.id;
+            const product = req.body;
+            const updatedProduct = {
+                $set: {
+                    customization: product.customization,
+                    image: product.image,
+                    item_name: product.item_name,
+                    price: product.price,
+                    processing_time: product.processing_time,
+                    rating: product.rating,
+                    short_description: product.short_description,
+                    stock_status: product.stock_status,
+                    subcategory_name: product.subcategory_name,
+                }
+            }
+            const filter = { _id: new ObjectId(id) }
+            const options = { upsert: true }
+            const result = await productCollection.updateOne(filter, updatedProduct, options)
+            res.send(result)  
+        })
+
+
+        app.delete("/product/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await productCollection.deleteOne(query);
+            res.send(result)
         })
 
         // Send a ping to confirm a successful connection
