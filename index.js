@@ -1,12 +1,22 @@
 const express = require("express");
 const cors = require("cors");
-require("dotenv").config()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+require("dotenv").config()
 const port = process.env.PORT || 5000;
 
 const app = express();
 
 //middlewere
+
+// const corsConfig = {
+//     origin: 'http://localhost:5000' || 'https://art-and-craft-server-by-tirtho.vercel.app/',
+//     credentials: true,
+//     methods: ['GET', 'POST', 'PUT', 'DELETE']
+// }
+
+// app.use(cors(corsConfig))
+// app.options("", cors(corsConfig))
+
 app.use(cors())
 app.use(express.json())
 
@@ -51,6 +61,15 @@ async function run() {
             res.send(result)
         })
 
+        app.get("/top-products/:id", async (req, res) => {
+            const id = req.params.id
+            // const filter = { email: userEmail }
+            // const options = { short: { item_name: 1 } }
+            const topProducts = productCollection.find().sort({ rating: -1 }).limit(parseInt(id))
+            const result = await topProducts.toArray()
+            res.send(result)
+        })
+
 
 
         app.post("/products", async (req, res) => {
@@ -58,6 +77,8 @@ async function run() {
             const result = await productCollection.insertOne(product)
             res.send(result)
         })
+
+
         app.put("/product/:id", async (req, res) => {
             const id = req.params.id;
             const product = req.body;
@@ -77,7 +98,7 @@ async function run() {
             const filter = { _id: new ObjectId(id) }
             const options = { upsert: true }
             const result = await productCollection.updateOne(filter, updatedProduct, options)
-            res.send(result)  
+            res.send(result)
         })
 
 
